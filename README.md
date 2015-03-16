@@ -1,0 +1,2 @@
+# LogReader
+WinForms log reader
