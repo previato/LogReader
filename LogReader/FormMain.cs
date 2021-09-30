@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
@@ -15,13 +9,7 @@ namespace LogReader
 {
     public partial class FormMain : Form
     {
-        private List<String> _threadList;
-        private String _currentThreadId;
-        private Boolean _cancellAll;
-        private Thread _logThread;
-
-        private Boolean _clearWhenNewFile;
-        private Int32 _clearLineCount;
+        private readonly List<string> _threadList;
 
         public FormMain()
         {
@@ -30,7 +18,14 @@ namespace LogReader
             _threadList = new List<string>();
         }
 
-        private String GetMostRecentFile(String path)
+        private string _currentThreadId;
+        private bool _cancellAll;
+        private Thread _logThread;
+
+        private bool _clearWhenNewFile;
+        private int _clearLineCount;
+
+        private string GetMostRecentFile(String path)
         {
             var logFile = default(string);
             var files = Directory.GetFiles(path);
@@ -59,8 +54,10 @@ namespace LogReader
 
             var reset = new AutoResetEvent(false);
 
-            var fw = new FileSystemWatcher(path);
-            fw.Filter = "*.*";
+            var fw = new FileSystemWatcher(path)
+            {
+                Filter = "*.*"
+            };
             fw.Changed += (s, e) =>
             {
                 reset.Set();
@@ -74,30 +71,30 @@ namespace LogReader
 
             var lineCount = 0;
 
-            Action<String> logAppend = (x) =>
+            Action<string> logAppend = (x) =>
             {
                 if (lineCount >= _clearLineCount)
                 {
-                    this.txtLog.Text = string.Concat("==== LIMPANDO DEVIDO AO NÚMERO MÁXIMO DE LINHAS TER ATINGIDO ====", "\r\n");
+                    txtLog.Text = string.Concat("==== LIMPANDO DEVIDO AO NÚMERO MÁXIMO DE LINHAS TER ATINGIDO ====", "\r\n");
                     lineCount = 0;
                 }
-                this.txtLog.AppendText(string.Concat(x, "\r\n"));
+                txtLog.AppendText(string.Concat(x, "\r\n"));
                 lineCount++;
             };
 
-            Action<String> logText = (x) =>
+            Action<string> logText = (x) =>
             {
-                this.txtLog.Text = x;
+                txtLog.Text = x;
             };
 
             try
             {
                 while (true)
                 {
-                    logFile = this.GetMostRecentFile(path);
+                    logFile = GetMostRecentFile(path);
                     if (string.IsNullOrEmpty(logFile))
                     {
-                        this.Invoke(logAppend, "Não há arquivos no diretório. Nova tentativa em 2 segundos");
+                        _ = Invoke(logAppend, "Não há arquivos no diretório. Nova tentativa em 2 segundos");
                         Thread.Sleep(2000);
                         continue;
                     }
@@ -113,7 +110,7 @@ namespace LogReader
 
                                 if (_currentThreadId == id)
                                 {
-                                    this.Invoke(logAppend, firstRead.TrimEnd('\n').TrimEnd('\r'));
+                                    _ = Invoke(logAppend, firstRead.TrimEnd('\n').TrimEnd('\r'));
                                 }
 
                                 while (true)
@@ -129,7 +126,7 @@ namespace LogReader
 
                                     if (_currentThreadId == id && !string.IsNullOrEmpty(log))
                                     {
-                                        this.Invoke(logAppend, log);
+                                        _ = Invoke(logAppend, log);
                                     }
 
                                     reset.WaitOne(1000);
@@ -139,7 +136,7 @@ namespace LogReader
                                     // verificar se há um arquivo mais recente.
                                     if (hasNewFile)
                                     {
-                                        logFile = this.GetMostRecentFile(path);
+                                        logFile = GetMostRecentFile(path);
                                         var act = default(Action<string>);
                                         if (_clearWhenNewFile)
                                         {
@@ -149,7 +146,7 @@ namespace LogReader
                                         {
                                             act = logAppend;
                                         }
-                                        this.Invoke(act, string.Format("------------------- NOVO ARQUIVO: {0} -------------------", logFile));
+                                        _ = Invoke(act, string.Format("------------------- NOVO ARQUIVO: {0} -------------------", logFile));
                                         break;
                                     }
                                 }
@@ -158,9 +155,9 @@ namespace LogReader
                     } while (hasNewFile);
                 }
             }
-            catch (System.Threading.ThreadAbortException ex)
+            catch (ThreadAbortException ex)
             {
-                this.Invoke(logAppend, "Leitura de log parada");
+                _ = Invoke(logAppend, "Leitura de log parada");
                 lock (_threadList)
                 {
                     _threadList.Remove(id);
@@ -168,12 +165,12 @@ namespace LogReader
             }
             catch (Exception ex)
             {
-                this.Invoke(logAppend, ex.ToString());
+                _ = Invoke(logAppend, ex.ToString());
             }
 
             lock (_threadList)
             {
-                this.Invoke(logAppend, string.Format("Finalizando thread: {0}", id));
+                _ = Invoke(logAppend, string.Format("Finalizando thread: {0}", id));
                 _threadList.Remove(id);
             }
         }
@@ -182,7 +179,7 @@ namespace LogReader
         {
             Action act = () =>
             {
-                this.Close();
+                Close();
             };
             while (true)
             {
@@ -190,7 +187,7 @@ namespace LogReader
                 {
                     if (_threadList.Count == 0)
                     {
-                        this.Invoke(act);
+                        Invoke(act);
                         break;
                     }
                 }
@@ -198,74 +195,82 @@ namespace LogReader
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void BtnStartStop_Click(object sender, EventArgs e)
         {
-            var threadId = Guid.NewGuid().ToString();
+            if (btnStartStop.Tag?.Equals("0") == true)
+            {
+                var threadId = Guid.NewGuid().ToString();
 
-            _logThread = new Thread(new ParameterizedThreadStart(this.ProcessLog));
-            _currentThreadId = _logThread.Name = threadId;
-            _threadList.Add(threadId);
+                _logThread = new Thread(new ParameterizedThreadStart(ProcessLog));
+                _currentThreadId = _logThread.Name = threadId;
+                _threadList.Add(threadId);
 
-            _clearLineCount = Convert.ToInt32(this.upClearLineCount.Value);
-            _clearWhenNewFile = this.chkClearWhenNewFile.Checked;
-            this.txtLog.Clear();
+                _clearLineCount = Convert.ToInt32(this.upClearLineCount.Value);
+                _clearWhenNewFile = chkClearWhenNewFile.Checked;
+                txtLog.Clear();
 
-            _logThread.Start(this.txtPath.Text);
+                _logThread.Start(txtPath.Text);
 
-            Properties.Settings.Default.LastPath = this.txtPath.Text;
-            Properties.Settings.Default.Save();
+                Properties.Settings.Default.LastPath = txtPath.Text;
+                Properties.Settings.Default.Save();
 
-            this.upClearLineCount.Enabled = false;
-            this.chkClearWhenNewFile.Enabled = false;
-            this.txtPath.Enabled = false;
-            this.btnBrowserFolder.Enabled = false;
-            this.btnStartLog.Enabled = false;
-            this.btnStopLog.Enabled = true;
+                upClearLineCount.Enabled = false;
+                chkClearWhenNewFile.Enabled = false;
+                txtPath.Enabled = false;
+                btnBrowserFolder.Enabled = false;
+
+                btnStartStop.Text = "Stop";
+                btnStartStop.Tag = "1";
+            }
+            else
+            {
+                _logThread.Abort();
+
+                upClearLineCount.Enabled = true;
+                chkClearWhenNewFile.Enabled = true;
+                txtPath.Enabled = true;
+                btnBrowserFolder.Enabled = true;
+
+                btnStartStop.Text = "Start";
+                btnStartStop.Tag = "0";
+            }
         }
 
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (_threadList.Count > 0)
             {
-                System.Diagnostics.Debug.WriteLine("Aguardando cancelamento das Threads");
+                Debug.WriteLine("Aguardando cancelamento das Threads");
                 _cancellAll = true;
                 e.Cancel = true;
 
-                var t = new Thread(new ThreadStart(this.ProcessClose));
+                var t = new Thread(new ThreadStart(ProcessClose));
                 t.Start();
             }
         }
 
-        private void btnStopLog_Click(object sender, EventArgs e)
+        private void BtnBrowserFolder_Click(object sender, EventArgs e)
         {
-            _logThread.Abort();
-            this.btnStopLog.Enabled = false;
-
-            this.upClearLineCount.Enabled = true;
-            this.chkClearWhenNewFile.Enabled = true;
-            this.txtPath.Enabled = true;
-            this.btnStartLog.Enabled = true;
-            this.btnBrowserFolder.Enabled = true;
-        }
-
-        private void btnBrowserFolder_Click(object sender, EventArgs e)
-        {
-            using (var f = new FolderBrowserDialog() { SelectedPath = this.txtPath.Text })
+            using var f = new FolderBrowserDialog() { SelectedPath = txtPath.Text };
+            if (f.ShowDialog(this) == DialogResult.OK)
             {
-                if (f.ShowDialog(this) == System.Windows.Forms.DialogResult.OK)
-                {
-                    this.txtPath.Text = f.SelectedPath.TrimEnd('\\') + "\\";
-                }
+                txtPath.Text = f.SelectedPath;
+                btnStartStop.Enabled = true;
             }
         }
 
         private void FormMain_Load(object sender, EventArgs e)
         {
-            var lastPath = Properties.Settings.Default.LastPath;
-            if (!string.IsNullOrEmpty(lastPath))
+            try
             {
-                this.txtPath.Text = lastPath;
+                var lastPath = Properties.Settings.Default.LastPath;
+                if (!string.IsNullOrEmpty(lastPath))
+                {
+                    txtPath.Text = lastPath;
+                    btnStartStop.Enabled = true;
+                }
             }
+            catch (Exception) { }
         }
     }
 }
