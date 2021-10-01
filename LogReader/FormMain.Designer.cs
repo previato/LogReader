@@ -28,16 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.btnStartStop = new System.Windows.Forms.Button();
             this.txtPath = new System.Windows.Forms.TextBox();
             this.txtLog = new System.Windows.Forms.TextBox();
             this.label1 = new System.Windows.Forms.Label();
             this.btnBrowserFolder = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.upClearLineCount = new System.Windows.Forms.NumericUpDown();
-            this.label3 = new System.Windows.Forms.Label();
             this.chkClearWhenNewFile = new System.Windows.Forms.CheckBox();
-            ((System.ComponentModel.ISupportInitialize)(this.upClearLineCount)).BeginInit();
+            this.logReaderComponent1 = new LogReader.LogReaderComponent(this.components);
             this.SuspendLayout();
             // 
             // btnStartStop
@@ -56,10 +54,12 @@
             // 
             // txtPath
             // 
+            this.txtPath.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.txtPath.Location = new System.Drawing.Point(107, 14);
             this.txtPath.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(439, 23);
+            this.txtPath.Size = new System.Drawing.Size(556, 23);
             this.txtPath.TabIndex = 1;
             // 
             // txtLog
@@ -90,7 +90,8 @@
             // 
             // btnBrowserFolder
             // 
-            this.btnBrowserFolder.Location = new System.Drawing.Point(554, 12);
+            this.btnBrowserFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnBrowserFolder.Location = new System.Drawing.Point(671, 14);
             this.btnBrowserFolder.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnBrowserFolder.Name = "btnBrowserFolder";
             this.btnBrowserFolder.Size = new System.Drawing.Size(88, 27);
@@ -99,55 +100,12 @@
             this.btnBrowserFolder.UseVisualStyleBackColor = true;
             this.btnBrowserFolder.Click += new System.EventHandler(this.BtnBrowserFolder_Click);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(38, 46);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(61, 15);
-            this.label2.TabIndex = 6;
-            this.label2.Text = "Clear after";
-            // 
-            // upClearLineCount
-            // 
-            this.upClearLineCount.Increment = new decimal(new int[] {
-            500,
-            0,
-            0,
-            0});
-            this.upClearLineCount.Location = new System.Drawing.Point(107, 44);
-            this.upClearLineCount.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
-            this.upClearLineCount.Maximum = new decimal(new int[] {
-            100000,
-            0,
-            0,
-            0});
-            this.upClearLineCount.Name = "upClearLineCount";
-            this.upClearLineCount.Size = new System.Drawing.Size(102, 23);
-            this.upClearLineCount.TabIndex = 7;
-            this.upClearLineCount.Value = new decimal(new int[] {
-            3000,
-            0,
-            0,
-            0});
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(217, 46);
-            this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(31, 15);
-            this.label3.TabIndex = 8;
-            this.label3.Text = "lines";
-            // 
             // chkClearWhenNewFile
             // 
             this.chkClearWhenNewFile.AutoSize = true;
             this.chkClearWhenNewFile.Checked = true;
             this.chkClearWhenNewFile.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkClearWhenNewFile.Location = new System.Drawing.Point(268, 45);
+            this.chkClearWhenNewFile.Location = new System.Drawing.Point(14, 48);
             this.chkClearWhenNewFile.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.chkClearWhenNewFile.Name = "chkClearWhenNewFile";
             this.chkClearWhenNewFile.Size = new System.Drawing.Size(114, 19);
@@ -155,15 +113,18 @@
             this.chkClearWhenNewFile.Text = "Clear on new file";
             this.chkClearWhenNewFile.UseVisualStyleBackColor = true;
             // 
+            // logReaderComponent1
+            // 
+            this.logReaderComponent1.Path = null;
+            this.logReaderComponent1.LogChanged += new System.EventHandler<LogReader.LogChangedEventArgs>(this.LogReaderComponent1_LogChanged);
+            this.logReaderComponent1.LogFileChanged += new System.EventHandler<LogReader.LogFileChangedEventArgs>(this.LogReaderComponent1_LogFileChanged);
+            // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(940, 660);
             this.Controls.Add(this.chkClearWhenNewFile);
-            this.Controls.Add(this.label3);
-            this.Controls.Add(this.upClearLineCount);
-            this.Controls.Add(this.label2);
             this.Controls.Add(this.btnBrowserFolder);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.txtLog);
@@ -174,7 +135,6 @@
             this.Text = "Log Reader";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormMain_FormClosing);
             this.Load += new System.EventHandler(this.FormMain_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.upClearLineCount)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -187,10 +147,8 @@
         private System.Windows.Forms.TextBox txtLog;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button btnBrowserFolder;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.NumericUpDown upClearLineCount;
-        private System.Windows.Forms.Label label3;
         private System.Windows.Forms.CheckBox chkClearWhenNewFile;
+        private LogReaderComponent logReaderComponent1;
     }
 }
 
