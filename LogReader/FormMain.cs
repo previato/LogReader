@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Threading;
 using System.Windows.Forms;
-using System.Diagnostics;
 using NAudio.Wave;
 using System.IO;
 
@@ -17,6 +15,7 @@ namespace LogReader
         private WaveOutEvent _outputDevice;
         private WaveFileReader _audioFile;
         private DateTime _lastPlayedAlert;
+        private int _textSelection;
 
         private void PlayAlert()
         {
@@ -34,6 +33,9 @@ namespace LogReader
                     _outputDevice.Init(_audioFile);
                     _outputDevice.Play();
                     _lastPlayedAlert = DateTime.Now;
+
+                    btnEnableScrolling.Enabled = true;
+                    _textSelection = txtLog.TextLength;
                 }
                 catch { }
             }
@@ -116,7 +118,17 @@ namespace LogReader
 
         private void LogReaderComponent1_LogChanged(object sender, LogChangedEventArgs e)
         {
-            txtLog.AppendText(e.Text);
+            if (!btnEnableScrolling.Enabled)
+            {
+                txtLog.AppendText(e.Text);
+            }
+            else
+            {
+                txtLog.Text += string.Concat(e.Text, "\n");
+
+                txtLog.SelectionStart = _textSelection;
+                txtLog.ScrollToCaret();
+            }
         }
 
         private void LogReaderComponent1_LogFileChanged(object sender, LogFileChangedEventArgs e)
@@ -143,6 +155,14 @@ namespace LogReader
         private void logReaderComponent1_AlertConditionOcurred(object sender, EventArgs e)
         {
             PlayAlert();
+        }
+
+        private void btnEnableScrolling_Click(object sender, EventArgs e)
+        {
+            btnEnableScrolling.Enabled = false;
+
+            txtLog.SelectionStart = txtLog.TextLength;
+            txtLog.ScrollToCaret();
         }
     }
 }
