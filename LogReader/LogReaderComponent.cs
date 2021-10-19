@@ -55,7 +55,7 @@ namespace LogReader
         public string Path { get; set; }
 
         [Description("Determine de text in which the alert event will be triggered.")]
-        public string AlertCondition { get;set; }   
+        public string AlertCondition { get; set; }
 
         [Description("When defined, the AlertConditionOccured event will be triggered when a log line matches the value specified in AlertCondition property.")]
         public bool EnableAlertEvent { get; set; }
@@ -68,7 +68,7 @@ namespace LogReader
             }
 
             _cts = new CancellationTokenSource();
-            _mainTask = Task.Factory.StartNew(ProcessLog);
+            _mainTask = Task.Run(ProcessLog);
         }
 
         public void StopListening()
@@ -125,8 +125,8 @@ namespace LogReader
                     var logFile = GetMostRecentFile();
                     if (string.IsNullOrEmpty(logFile))
                     {
-                        _context.Post(_postCallbackLogChanged, "Não há arquivos no diretório. Nova tentativa em 2 segundos");
-                        try { Task.Delay(2000, _cts.Token); } catch { }
+                        _context.Post(_postCallbackLogChanged, "Não há arquivos no diretório. Nova tentativa em 2 segundos\r\n");
+                        try { Task.Delay(2000, _cts.Token).Wait(); } catch { }
                         continue;
                     }
 
@@ -137,7 +137,7 @@ namespace LogReader
                         using var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                         using var reader = new StreamReader(fs);
 
-                        var firstRead = reader.ReadToEnd(); //.TrimEnd('\n').TrimEnd('\r');
+                        var firstRead = reader.ReadToEnd();
                         _context.Post(_postCallbackLogChanged, firstRead);
 
                         while (!_cts.IsCancellationRequested)
@@ -147,14 +147,17 @@ namespace LogReader
 
                             while ((line = reader.ReadLine()) != null)
                             {
-                                if (line.Contains(AlertCondition, StringComparison.InvariantCultureIgnoreCase)) {
+                                if (line.Contains(AlertCondition, StringComparison.InvariantCultureIgnoreCase))
+                                {
                                     _context.Post(_postCallbackAlertConditionOccurred, log);
                                 }
                                 log = string.Concat(log, line, Environment.NewLine);
                             }
-                            //log = log.TrimEnd('\n').TrimEnd('\r');
 
-                            _context.Post(_postCallbackLogChanged, log);
+                            if (!string.IsNullOrEmpty(log))
+                            {
+                                _context.Post(_postCallbackLogChanged, log);
+                            }
 
                             reset.WaitOne(1000);
 
