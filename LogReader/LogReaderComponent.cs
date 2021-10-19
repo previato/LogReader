@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +10,7 @@ namespace LogReader
     {
         private readonly SynchronizationContext _context;
         private readonly SendOrPostCallback _postCallbackLogChanged;
+        private readonly SendOrPostCallback _postCallbackAlertConditionOccurred;
 
         public LogReaderComponent() : this(null)
         {
@@ -30,6 +27,7 @@ namespace LogReader
 
             _context = SynchronizationContext.Current;
             _postCallbackLogChanged = new SendOrPostCallback(OnLogChanged);
+            _postCallbackAlertConditionOccurred = new SendOrPostCallback(_ => AlertConditionOcurred?.Invoke(this, EventArgs.Empty));
         }
 
         private CancellationTokenSource _cts;
@@ -50,8 +48,17 @@ namespace LogReader
         [Description("Occurs when starts to listening to a new log file.")]
         public event EventHandler<LogFileChangedEventArgs> LogFileChanged;
 
-        [Description("Directory path of log files")]
+        [Description("Occurs when log read detectect the text specified on the property AlertCondition.")]
+        public event EventHandler AlertConditionOcurred;
+
+        [Description("Directory path of log files.")]
         public string Path { get; set; }
+
+        [Description("Determine de text in which the alert event will be triggered.")]
+        public string AlertCondition { get;set; }   
+
+        [Description("When defined, the AlertConditionOccured event will be triggered when a log line matches the value specified in AlertCondition property.")]
+        public bool EnableAlertEvent { get; set; }
 
         public void StartListening()
         {
@@ -140,6 +147,9 @@ namespace LogReader
 
                             while ((line = reader.ReadLine()) != null)
                             {
+                                if (line.Contains(AlertCondition, StringComparison.InvariantCultureIgnoreCase)) {
+                                    _context.Post(_postCallbackAlertConditionOccurred, log);
+                                }
                                 log = string.Concat(log, line, Environment.NewLine);
                             }
                             //log = log.TrimEnd('\n').TrimEnd('\r');

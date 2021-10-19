@@ -36,13 +36,16 @@
             this.btnBrowserFolder = new System.Windows.Forms.Button();
             this.chkClearWhenNewFile = new System.Windows.Forms.CheckBox();
             this.logReaderComponent1 = new LogReader.LogReaderComponent(this.components);
+            this.chkPlayAlert = new System.Windows.Forms.CheckBox();
+            this.txtAlertCondition = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // btnStartStop
             // 
             this.btnStartStop.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.btnStartStop.Enabled = false;
-            this.btnStartStop.Location = new System.Drawing.Point(839, 12);
+            this.btnStartStop.Location = new System.Drawing.Point(799, 12);
             this.btnStartStop.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnStartStop.Name = "btnStartStop";
             this.btnStartStop.Size = new System.Drawing.Size(88, 55);
@@ -59,7 +62,7 @@
             this.txtPath.Location = new System.Drawing.Point(107, 14);
             this.txtPath.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.txtPath.Name = "txtPath";
-            this.txtPath.Size = new System.Drawing.Size(556, 23);
+            this.txtPath.Size = new System.Drawing.Size(516, 23);
             this.txtPath.TabIndex = 1;
             // 
             // txtLog
@@ -75,7 +78,7 @@
             this.txtLog.Multiline = true;
             this.txtLog.Name = "txtLog";
             this.txtLog.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-            this.txtLog.Size = new System.Drawing.Size(912, 572);
+            this.txtLog.Size = new System.Drawing.Size(872, 572);
             this.txtLog.TabIndex = 2;
             // 
             // label1
@@ -91,7 +94,7 @@
             // btnBrowserFolder
             // 
             this.btnBrowserFolder.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnBrowserFolder.Location = new System.Drawing.Point(671, 14);
+            this.btnBrowserFolder.Location = new System.Drawing.Point(631, 14);
             this.btnBrowserFolder.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
             this.btnBrowserFolder.Name = "btnBrowserFolder";
             this.btnBrowserFolder.Size = new System.Drawing.Size(88, 27);
@@ -115,15 +118,55 @@
             // 
             // logReaderComponent1
             // 
+            this.logReaderComponent1.AlertCondition = null;
+            this.logReaderComponent1.EnableAlertEvent = false;
             this.logReaderComponent1.Path = null;
             this.logReaderComponent1.LogChanged += new System.EventHandler<LogReader.LogChangedEventArgs>(this.LogReaderComponent1_LogChanged);
             this.logReaderComponent1.LogFileChanged += new System.EventHandler<LogReader.LogFileChangedEventArgs>(this.LogReaderComponent1_LogFileChanged);
+            this.logReaderComponent1.AlertConditionOcurred += new System.EventHandler(this.logReaderComponent1_AlertConditionOcurred);
+            // 
+            // chkPlayAlert
+            // 
+            this.chkPlayAlert.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.chkPlayAlert.AutoSize = true;
+            this.chkPlayAlert.Location = new System.Drawing.Point(631, 48);
+            this.chkPlayAlert.Margin = new System.Windows.Forms.Padding(4, 3, 4, 3);
+            this.chkPlayAlert.Name = "chkPlayAlert";
+            this.chkPlayAlert.Size = new System.Drawing.Size(87, 19);
+            this.chkPlayAlert.TabIndex = 10;
+            this.chkPlayAlert.Text = "Enable alert";
+            this.chkPlayAlert.UseVisualStyleBackColor = true;
+            this.chkPlayAlert.CheckedChanged += new System.EventHandler(this.chkPlayAlert_CheckedChanged);
+            // 
+            // txtAlertCondition
+            // 
+            this.txtAlertCondition.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtAlertCondition.Location = new System.Drawing.Point(246, 45);
+            this.txtAlertCondition.Name = "txtAlertCondition";
+            this.txtAlertCondition.Size = new System.Drawing.Size(376, 23);
+            this.txtAlertCondition.TabIndex = 11;
+            this.txtAlertCondition.Text = "exception";
+            this.txtAlertCondition.TextChanged += new System.EventHandler(this.txtAlertCondition_TextChanged);
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(150, 50);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(89, 15);
+            this.label2.TabIndex = 12;
+            this.label2.Text = "Alert condition:";
             // 
             // FormMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(940, 660);
+            this.ClientSize = new System.Drawing.Size(900, 660);
+            this.Controls.Add(this.label2);
+            this.Controls.Add(this.txtAlertCondition);
+            this.Controls.Add(this.chkPlayAlert);
             this.Controls.Add(this.chkClearWhenNewFile);
             this.Controls.Add(this.btnBrowserFolder);
             this.Controls.Add(this.label1);
@@ -149,6 +192,9 @@
         private System.Windows.Forms.Button btnBrowserFolder;
         private System.Windows.Forms.CheckBox chkClearWhenNewFile;
         private LogReaderComponent logReaderComponent1;
+        private System.Windows.Forms.CheckBox chkPlayAlert;
+        private System.Windows.Forms.TextBox txtAlertCondition;
+        private System.Windows.Forms.Label label2;
     }
 }
 

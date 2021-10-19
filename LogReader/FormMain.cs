@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Windows.Forms;
 using System.Diagnostics;
+using NAudio.Wave;
+using System.IO;
 
 namespace LogReader
 {
@@ -10,6 +12,40 @@ namespace LogReader
         public FormMain()
         {
             InitializeComponent();
+        }
+
+        private WaveOutEvent _outputDevice;
+        private WaveFileReader _audioFile;
+        private DateTime _lastPlayedAlert;
+
+        private void PlayAlert()
+        {
+            if (DateTime.Now > _lastPlayedAlert.AddSeconds(30))
+            {
+                try
+                {
+                    var path = Path.Combine(new FileInfo(System.Reflection.Assembly.GetEntryAssembly().Location).DirectoryName, "alert.wav");
+
+                    _outputDevice = new WaveOutEvent();
+                    _audioFile = new WaveFileReader(path);
+
+                    _outputDevice.PlaybackStopped += OutputDevice_PlaybackStopped;
+
+                    _outputDevice.Init(_audioFile);
+                    _outputDevice.Play();
+                    _lastPlayedAlert = DateTime.Now;
+                }
+                catch { }
+            }
+        }
+
+        private void OutputDevice_PlaybackStopped(object sender, StoppedEventArgs e)
+        {
+            _audioFile?.Dispose();
+            _audioFile = null;
+
+            _outputDevice?.Dispose();
+            _outputDevice = null;
         }
 
         private void BtnStartStop_Click(object sender, EventArgs e)
@@ -47,6 +83,9 @@ namespace LogReader
         private void FormMain_FormClosing(object sender, FormClosingEventArgs e)
         {
             logReaderComponent1.StopListening();
+
+            _outputDevice?.Dispose();
+            _audioFile?.Dispose();
         }
 
         private void BtnBrowserFolder_Click(object sender, EventArgs e)
@@ -69,6 +108,8 @@ namespace LogReader
                     txtPath.Text = lastPath;
                     btnStartStop.Enabled = true;
                 }
+
+                logReaderComponent1.AlertCondition = txtAlertCondition.Text;
             }
             catch (Exception) { }
         }
@@ -80,11 +121,28 @@ namespace LogReader
 
         private void LogReaderComponent1_LogFileChanged(object sender, LogFileChangedEventArgs e)
         {
-            if (chkClearWhenNewFile.Checked) {
+            if (chkClearWhenNewFile.Checked)
+            {
                 txtLog.Clear();
             }
 
             txtLog.Text += string.Format("---------------- New file created: {0} --------------------", e.FileName);
+        }
+
+        private void chkPlayAlert_CheckedChanged(object sender, EventArgs e)
+        {
+            txtAlertCondition.Enabled = !chkPlayAlert.Checked;
+            logReaderComponent1.EnableAlertEvent = chkPlayAlert.Enabled;
+        }
+
+        private void txtAlertCondition_TextChanged(object sender, EventArgs e)
+        {
+            logReaderComponent1.AlertCondition = txtAlertCondition.Text;
+        }
+
+        private void logReaderComponent1_AlertConditionOcurred(object sender, EventArgs e)
+        {
+            PlayAlert();
         }
     }
 }
