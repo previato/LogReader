@@ -36,6 +36,8 @@ namespace LogReader
 
                     btnEnableScrolling.Enabled = true;
                     _textSelection = txtLog.TextLength;
+
+                    WinExtensions.FlashWindowEx(this);
                 }
                 catch { }
             }
