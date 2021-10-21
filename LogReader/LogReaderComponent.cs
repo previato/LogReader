@@ -132,13 +132,21 @@ namespace LogReader
 
                     do
                     {
-                        hasNewFile = false;
-
                         using var fs = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
                         using var reader = new StreamReader(fs);
 
                         var firstRead = reader.ReadToEnd();
                         _context.Post(_postCallbackLogChanged, firstRead);
+
+                        if (hasNewFile)
+                        {
+                            if (firstRead.Contains(AlertCondition, StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                _context.Post(_postCallbackAlertConditionOccurred, null);
+                            }
+                        }
+
+                        hasNewFile = false;
 
                         while (!_cts.IsCancellationRequested)
                         {
@@ -149,7 +157,7 @@ namespace LogReader
                             {
                                 if (line.Contains(AlertCondition, StringComparison.InvariantCultureIgnoreCase))
                                 {
-                                    _context.Post(_postCallbackAlertConditionOccurred, log);
+                                    _context.Post(_postCallbackAlertConditionOccurred, null);
                                 }
                                 log = string.Concat(log, line, Environment.NewLine);
                             }
