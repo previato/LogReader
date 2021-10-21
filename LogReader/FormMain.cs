@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using NAudio.Wave;
 using System.IO;
+using System.Linq;
 
 namespace LogReader
 {
@@ -56,6 +57,9 @@ namespace LogReader
         {
             if (btnStartStop.Tag?.Equals("0") == true)
             {
+                var dir = txtPath.Text.Split('\\').Last();
+                Text = $"{dir} - Log Reader";
+
                 txtLog.Clear();
 
                 logReaderComponent1.Path = txtPath.Text;
