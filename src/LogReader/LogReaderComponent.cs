@@ -51,12 +51,15 @@ namespace LogReader
         [Description("Occurs when log read detectect the text specified on the property AlertCondition.")]
         public event EventHandler AlertConditionOcurred;
 
+        [DefaultValue("")]
         [Description("Directory path of log files.")]
-        public string Path { get; set; }
+        public string Path { get; set; } = string.Empty;
 
+        [DefaultValue("")]
         [Description("Determine de text in which the alert event will be triggered.")]
-        public string AlertCondition { get; set; }
+        public string AlertCondition { get; set; } = string.Empty;
 
+        [DefaultValue(false)]
         [Description("When defined, the AlertConditionOccured event will be triggered when a log line matches the value specified in AlertCondition property.")]
         public bool EnableAlertEvent { get; set; }
 
